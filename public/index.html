@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЭЛИЗА - Админ-панель</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:100vh;color:#e6e6fa}
+    .hidden{display:none!important}
+    .login-box{max-width:400px;margin:80px auto;padding:2rem;background:rgba(45,55,72,0.5);border:1px solid rgba(159,122,234,0.3);border-radius:16px;text-align:center}
+    .login-box h1{font-size:2.5rem;font-weight:300;letter-spacing:0.2em;margin-bottom:0.5rem}
+    .subtitle{color:#9999b3;font-style:italic;margin-bottom:2rem}
+    .form-group{margin-bottom:1.5rem;text-align:left}
+    .form-group label{display:block;color:#e6e6fa;font-size:0.9rem;margin-bottom:0.5rem}
+    .form-group input{width:100%;padding:0.75rem;background:rgba(45,55,72,0.6);border:2px solid #4a5568;border-radius:8px;color:#e6e6fa;font-size:1rem}
+    .form-group input:focus{outline:none;border-color:#9f7aea}
+    .btn{padding:0.75rem 1.5rem;border:none;border-radius:8px;font-size:1rem;cursor:pointer}
+    .btn-primary{background:linear-gradient(135deg,#9f7aea,#7c3aed);color:#fff}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(159,122,234,0.4)}
+    .btn-secondary{background:rgba(159,122,234,0.2);color:#e6e6fa;border:1px solid #9f7aea}
+    .btn-danger{background:rgba(252,129,129,0.2);color:#fc8181;border:1px solid #fc8181}
+    .btn-small{padding:0.5rem 1rem;font-size:0.85rem}
+    .error-msg{margin:1rem 0;padding:0.75rem;background:rgba(252,129,129,0.1);border:1px solid #fc8181;border-radius:6px;color:#fc8181}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 2rem;background:rgba(45,55,72,0.3);border-bottom:1px solid rgba(159,122,234,0.2)}
+    .header h1{font-size:1.5rem;font-weight:500}
+    .header-right{display:flex;align-items:center;gap:1rem}
+    #adminUsername{color:#9999b3}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;padding:2rem}
+    .stat{background:rgba(45,55,72,0.4);border:1px solid rgba(159,122,234,0.2);border-radius:12px;padding:1.5rem;text-align:center}
+    .stat-value{font-size:2rem;font-weight:bold;color:#9f7aea}
+    .stat-label{color:#9999b3;font-size:0.85rem}
+    .section{background:rgba(45,55,72,0.3);border-radius:12px;padding:1.5rem;margin:1rem 2rem}
+    .section h2{font-size:1.3rem;margin-bottom:1rem}
+    .form-row{display:grid;grid-template-columns:1fr 1fr auto;gap:1rem;align-items:end;margin-bottom:1rem}
+    .generated{background:rgba(159,122,234,0.1);border:1px solid rgba(159,122,234,0.3);border-radius:8px;padding:1rem;margin-top:1rem}
+    .keys-list{font-family:monospace;background:rgba(0,0,0,0.3);padding:1rem;border-radius:6px;max-height:200px;overflow-y:auto}
+    .key-item{padding:0.5rem;border-bottom:1px solid rgba(159,122,234,0.1);display:flex;justify-content:space-between}
+    .key-text{color:#68d391}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:1rem;text-align:left;border-bottom:1px solid rgba(159,122,234,0.1)}
+    th{background:rgba(45,55,72,0.5);color:#9f7aea;font-weight:500}
+    .key-cell{font-family:monospace;color:#68d391}
+    .badge{display:inline-block;padding:0.25rem 0.75rem;border-radius:12px;font-size:0.85rem}
+    .badge-active{background:rgba(104,211,145,0.2);color:#68d391}
+    .badge-pending{background:rgba(236,201,75,0.2);color:#ecc94b}
+    .badge-expired{background:rgba(252,129,129,0.2);color:#fc8181}
+    .actions{display:flex;gap:0.5rem}
+    @media(max-width:768px){.header{flex-direction:column;gap:1rem;text-align:center}.stats{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="loginPage">
+    <div class="login-box">
+      <h1>ЭЛИЗА</h1>
+      <p class="subtitle">Админ-панель</p>
+      <form id="loginForm">
+        <div class="form-group"><label>Логин:</label><input type="text" id="username" value="admin" required></div>
+        <div class="form-group"><label>Пароль:</label><input type="password" id="password" value="admin123" required></div>
+        <div id="loginError" class="error-msg hidden"></div>
+        <button type="submit" class="btn btn-primary">Войти</button>
+      </form>
+    </div>
+  </div>
+  <div id="dashboard" class="hidden">
+    <header class="header">
+      <h1>ЭЛИЗА - Админ-панель</h1>
+      <div class="header-right"><span id="adminUsername"></span><button id="logoutBtn" class="btn btn-secondary">Выйти</button></div>
+    </header>
+    <section class="stats">
+      <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Всего ключей</div></div>
+      <div class="stat"><div class="stat-value" id="statActive">0</div><div class="stat-label">Активных</div></div>
+      <div class="stat"><div class="stat-value" id="statPending">0</div><div class="stat-label">Ожидают</div></div>
+      <div class="stat"><div class="stat-value" id="statExpired">0</div><div class="stat-label">Истёкших</div></div>
+      <div class="stat"><div class="stat-value" id="statRequests">0</div><div class="stat-label">Запросов</div></div>
+    </section>
+    <section class="section">
+      <h2>Генерация ключей</h2>
+      <form id="generateForm">
+        <div class="form-row">
+          <div class="form-group"><label>Дата:</label><input type="date" id="expiresDate" required></div>
+          <div class="form-group"><label>Количество:</label><input type="number" id="keyCount" min="1" max="100" value="1"></div>
+          <button type="submit" class="btn btn-primary">Сгенерировать</button>
+        </div>
+      </form>
+      <div id="generatedKeys" class="generated hidden">
+        <strong>Ключи:</strong>
+        <div id="keysList" class="keys-list"></div>
+        <button id="copyBtn" class="btn btn-secondary btn-small" style="margin-top:0.5rem">Копировать</button>
+      </div>
+    </section>
+    <section class="section">
+      <h2>Все ключи <button id="refreshBtn" class="btn btn-secondary btn-small">Обновить</button></h2>
+      <table><thead><tr><th>Ключ</th><th>Истекает</th><th>Активирован</th><th>Запросов</th><th>Статус</th><th>Действия</th></tr></thead><tbody id="keysTable"></tbody></table>
+    </section>
+  </div>
+  <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('admin-token');
+    let keysText = '';
+
+    function checkAuth() { token ? showDash() : showLogin(); }
+    function showLogin() { document.getElementById('loginPage').classList.remove('hidden'); document.getElementById('dashboard').classList.add('hidden'); }
+    function showDash() { document.getElementById('loginPage').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); loadStats(); loadKeys(); }
+
+    document.getElementById('loginForm').onsubmit = async e => {
+      e.preventDefault();
+      const u = document.getElementById('username').value, p = document.getElementById('password').value;
+      try {
+        const r = await fetch(API + '/api/admin/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username:u,password:p}) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        token = d.token;
+        localStorage.setItem('admin-token', token);
+        document.getElementById('adminUsername').textContent = d.username;
+        document.getElementById('loginError').classList.add('hidden');
+        showDash();
+      } catch(err) {
+        document.getElementById('loginError').textContent = err.message;
+        document.getElementById('loginError').classList.remove('hidden');
+      }
+    };
+
+    document.getElementById('logoutBtn').onclick = () => { token = null; localStorage.removeItem('admin-token'); showLogin(); };
+
+    async function loadStats() {
+      const r = await fetch(API + '/api/admin/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+      const d = await r.json();
+      if (r.ok) {
+        document.getElementById('statTotal').textContent = d.stats.total;
+        document.getElementById('statActive').textContent = d.stats.active;
+        document.getElementById('statPending').textContent = d.stats.pending;
+        document.getElementById('statExpired').textContent = d.stats.expired;
+        document.getElementById('statRequests').textContent = d.stats.totalRequests;
+      }
+    }
+
+    async function loadKeys() {
+      const r = await fetch(API + '/api/admin/keys', { headers: { 'Authorization': 'Bearer ' + token } });
+      const d = await r.json();
+      if (!r.ok) return;
+      const tb = document.getElementById('keysTable');
+      tb.innerHTML = '';
+      if (!d.keys.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem">Нет ключей</td></tr>'; return; }
+      d.keys.forEach(k => {
+        const tr = document.createElement('tr');
+        const status = {active:'✅ Активен',pending:'⏳ Ожидает',expired:'❌ Истёк'}[k.status];
+        const badge = {active:'badge-active',pending:'badge-pending',expired:'badge-expired'}[k.status];
+        const act = k.activatedAt ? new Date(k.activatedAt).toLocaleDateString() : '—';
+        const exp = new Date(k.expires_at).toLocaleDateString();
+        tr.innerHTML = `<td class="key-cell">${k.key}</td><td>${exp}</td><td>${act}</td><td>${k.requestCount}</td><td><span class="badge ${badge}">${status}</span></td><td class="actions">${k.status==='active'?`<button class="btn btn-danger btn-small" onclick="deactivate(${k.id})">🔒</button>`:''}<button class="btn btn-secondary btn-small" onclick="del(${k.id})">🗑️</button></td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    window.deactivate = async id => {
+      if (!confirm('Деактивировать?')) return;
+      await fetch(API + '/api/admin/keys/' + id + '/deactivate', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+      loadStats(); loadKeys();
+    };
+    window.del = async id => {
+      if (!confirm('Удалить?')) return;
+      await fetch(API + '/api/admin/keys/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      loadStats(); loadKeys();
+    };
+
+    document.getElementById('generateForm').onsubmit = async e => {
+      e.preventDefault();
+      const exp = document.getElementById('expiresDate').value, cnt = document.getElementById('keyCount').value;
+      const r = await fetch(API + '/api/admin/generate', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type':'application/json' }, body: JSON.stringify({expiresDate:exp,count:cnt}) });
+      const d = await r.json();
+      if (!r.ok) { alert(d.error); return; }
+      keysText = d.keys.map(k => k.key).join('\n');
+      document.getElementById('keysList').innerHTML = d.keys.map(k => `<div class="key-item"><span class="key-text">${k.key}</span><span>${k.expiresAt}</span></div>`).join('');
+      document.getElementById('generatedKeys').classList.remove('hidden');
+    };
+
+    document.getElementById('copyBtn').onclick = () => { navigator.clipboard.writeText(keysText).then(()=>alert('Скопировано')); };
+    document.getElementById('refreshBtn').onclick = loadKeys;
+
+    checkAuth();
+  </script>
+</body>
+</html>
